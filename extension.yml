@@ -1,0 +1,57 @@
+schema_version: "1.0"
+
+extension:
+  id: worktree-parallel
+  name: "Worktree Parallel"
+  version: "1.0.0"
+  description: "Default-on git worktree isolation for parallel agents and features — sibling-dir or .worktrees/ layout, configurable, with cleanup and dashboard"
+  author: "abiyadav"
+  repository: "https://github.com/abiyadav/spec-kit-worktree-parallel"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=0.4.0"
+  tools:
+    - name: git
+      required: true
+    - name: jq
+      required: false
+
+provides:
+  commands:
+    - name: speckit.worktree.create
+      file: commands/speckit.worktree.create.md
+      description: "Spawn an isolated git worktree for a feature branch (default-on, configurable layout)"
+    - name: speckit.worktree.list
+      file: commands/speckit.worktree.list.md
+      description: "Dashboard of all active worktrees with spec-artifact and task progress"
+    - name: speckit.worktree.clean
+      file: commands/speckit.worktree.clean.md
+      description: "Remove merged, orphaned, or stale worktrees and reclaim disk space"
+
+  config:
+    - name: "worktree-config.yml"
+      template: "worktree-config.yml"
+      description: "Worktree layout and behavior configuration"
+      required: false
+
+hooks:
+  after_specify:
+    command: speckit.worktree.create
+    optional: false
+    description: "Auto-spawn a worktree after a new feature is specified (disable with auto_create: false in config)"
+
+tags:
+  - "worktree"
+  - "git"
+  - "parallel"
+  - "isolation"
+  - "agents"
+  - "workflow"
+
+config:
+  defaults:
+    layout: "sibling"
+    auto_create: true
+    sibling_pattern: "{{repo}}--{{branch}}"
+    dotworktrees_dir: ".worktrees"
