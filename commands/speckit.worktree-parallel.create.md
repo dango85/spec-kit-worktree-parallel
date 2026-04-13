@@ -84,7 +84,7 @@ Environment variable `SPECIFY_WORKTREE_PATH` overrides the computed path entirel
    **Next steps:**
    - Open the worktree directory in your IDE or a new terminal
    - Run `/speckit.implement` from the worktree root
-   - Run `/speckit.worktree.list` to see all active worktrees
+   - Run `/speckit.worktree-parallel.list` to see all active worktrees
    ```
 
 ## Rules

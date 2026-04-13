@@ -2,7 +2,7 @@
   "worktree-parallel": {
     "name": "Worktree Parallel",
     "id": "worktree-parallel",
-    "description": "Default-on git worktree isolation for parallel agents and features — sibling-dir or nested layout, configurable, with cleanup and dashboard.",
+    "description": "Default-on worktree isolation for parallel agents — sibling or nested layout",
     "author": "dango85",
     "version": "1.0.0",
     "download_url": "https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.0.0.zip",
@@ -23,8 +23,7 @@
       "git",
       "parallel",
       "isolation",
-      "agents",
-      "workflow"
+      "agents"
     ],
     "verified": false,
     "downloads": 0,
