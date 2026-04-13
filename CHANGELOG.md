@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 (2026-04-13)
+
+### Added
+- `modifies_hooks` declaration: automatically disables `before_specify -> speckit.git.feature` on install (with user consent) so the primary checkout stays on a stable branch
+- Requires Spec Kit with `modifies_hooks` support ([github/spec-kit#2209](https://github.com/github/spec-kit/pull/2209))
+
 ## 1.0.0 (2026-04-13)
 
 ### Added
