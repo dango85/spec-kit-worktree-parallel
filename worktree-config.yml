@@ -1,0 +1,18 @@
+# Worktree Parallel — configuration
+# Copy this file to .specify/extensions/worktree-parallel/worktree-config.yml
+# to override defaults per-repo.
+
+# Layout mode: "sibling" or "nested"
+#   sibling — worktree at ../<repo>--<branch> (default; IDE-friendly, one window per feature)
+#   nested  — worktree at .worktrees/<branch>/ inside the repo (gitignored)
+layout: "sibling"
+
+# Auto-create worktree after /speckit.specify without prompting.
+# Set to false to get a confirmation prompt instead.
+auto_create: true
+
+# Pattern for sibling-dir names. Available placeholders: {{repo}}, {{branch}}.
+sibling_pattern: "{{repo}}--{{branch}}"
+
+# Directory name for nested layout (relative to repo root, auto-gitignored).
+dotworktrees_dir: ".worktrees"
