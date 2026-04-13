@@ -1,0 +1,5 @@
+# Development and publishing files — not needed when installed
+PUBLISH.md
+catalog-entry.json
+.git/
+.github/

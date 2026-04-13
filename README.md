@@ -61,9 +61,9 @@ dotworktrees_dir: ".worktrees"
 
 | Command | Description | Modifies files? |
 |---------|-------------|-----------------|
-| `/speckit.worktree.create` | Spawn a worktree for a feature branch | Yes |
-| `/speckit.worktree.list` | Dashboard: status, artifacts, tasks | No |
-| `/speckit.worktree.clean` | Remove merged/stale worktrees | Yes |
+| `/speckit.worktree-parallel.create` | Spawn a worktree for a feature branch | Yes |
+| `/speckit.worktree-parallel.list` | Dashboard: status, artifacts, tasks | No |
+| `/speckit.worktree-parallel.clean` | Remove merged/stale worktrees | Yes |
 
 ## Hook
 

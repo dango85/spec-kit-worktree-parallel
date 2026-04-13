@@ -4,7 +4,7 @@ extension:
   id: worktree-parallel
   name: "Worktree Parallel"
   version: "1.0.0"
-  description: "Default-on git worktree isolation for parallel agents and features — sibling-dir or .worktrees/ layout, configurable, with cleanup and dashboard"
+  description: "Default-on worktree isolation for parallel agents — sibling or nested layout"
   author: "dango85"
   repository: "https://github.com/dango85/spec-kit-worktree-parallel"
   license: "MIT"
@@ -14,19 +14,17 @@ requires:
   tools:
     - name: git
       required: true
-    - name: jq
-      required: false
 
 provides:
   commands:
-    - name: speckit.worktree.create
-      file: commands/speckit.worktree.create.md
-      description: "Spawn an isolated git worktree for a feature branch (default-on, configurable layout)"
-    - name: speckit.worktree.list
-      file: commands/speckit.worktree.list.md
+    - name: speckit.worktree-parallel.create
+      file: commands/speckit.worktree-parallel.create.md
+      description: "Spawn an isolated git worktree for a feature branch"
+    - name: speckit.worktree-parallel.list
+      file: commands/speckit.worktree-parallel.list.md
       description: "Dashboard of all active worktrees with spec-artifact and task progress"
-    - name: speckit.worktree.clean
-      file: commands/speckit.worktree.clean.md
+    - name: speckit.worktree-parallel.clean
+      file: commands/speckit.worktree-parallel.clean.md
       description: "Remove merged, orphaned, or stale worktrees and reclaim disk space"
 
   config:
@@ -37,9 +35,9 @@ provides:
 
 hooks:
   after_specify:
-    command: speckit.worktree.create
+    command: speckit.worktree-parallel.create
     optional: false
-    description: "Auto-spawn a worktree after a new feature is specified (disable with auto_create: false in config)"
+    description: "Auto-spawn a worktree after a new feature is specified"
 
 tags:
   - "worktree"
@@ -47,7 +45,6 @@ tags:
   - "parallel"
   - "isolation"
   - "agents"
-  - "workflow"
 
 config:
   defaults:
