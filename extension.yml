@@ -5,8 +5,8 @@ extension:
   name: "Worktree Parallel"
   version: "1.0.0"
   description: "Default-on git worktree isolation for parallel agents and features — sibling-dir or .worktrees/ layout, configurable, with cleanup and dashboard"
-  author: "abiyadav"
-  repository: "https://github.com/abiyadav/spec-kit-worktree-parallel"
+  author: "dango85"
+  repository: "https://github.com/dango85/spec-kit-worktree-parallel"
   license: "MIT"
 
 requires:
