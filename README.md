@@ -13,7 +13,7 @@ The community [spec-kit-worktree](https://github.com/Quratulain-bilal/spec-kit-w
 ## Installation
 
 ```bash
-specify extension add --from https://github.com/abiyadav/spec-kit-worktree-parallel/archive/refs/tags/v1.0.0.zip
+specify extension add --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.0.0.zip
 ```
 
 ## Layout modes
