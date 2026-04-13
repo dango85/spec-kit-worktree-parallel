@@ -48,7 +48,7 @@ Switch with `layout: nested` in `worktree-config.yml`.
 
 ## Configuration
 
-Create `.specify/extensions/worktree-parallel/worktree-config.yml` to override defaults:
+Create `.specify/extensions/worktrees/worktree-config.yml` to override defaults:
 
 ```yaml
 layout: "sibling"           # sibling | nested
@@ -61,9 +61,9 @@ dotworktrees_dir: ".worktrees"
 
 | Command | Description | Modifies files? |
 |---------|-------------|-----------------|
-| `/speckit.worktree-parallel.create` | Spawn a worktree for a feature branch | Yes |
-| `/speckit.worktree-parallel.list` | Dashboard: status, artifacts, tasks | No |
-| `/speckit.worktree-parallel.clean` | Remove merged/stale worktrees | Yes |
+| `/speckit.worktrees.create` | Spawn a worktree for a feature branch | Yes |
+| `/speckit.worktrees.list` | Dashboard: status, artifacts, tasks | No |
+| `/speckit.worktrees.clean` | Remove merged/stale worktrees | Yes |
 
 ## Hook
 

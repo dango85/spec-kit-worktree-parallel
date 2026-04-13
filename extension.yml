@@ -1,8 +1,8 @@
 schema_version: "1.0"
 
 extension:
-  id: worktree-parallel
-  name: "Worktree Parallel"
+  id: worktrees
+  name: "Worktrees"
   version: "1.0.0"
   description: "Default-on worktree isolation for parallel agents — sibling or nested layout"
   author: "dango85"
@@ -17,14 +17,14 @@ requires:
 
 provides:
   commands:
-    - name: speckit.worktree-parallel.create
-      file: commands/speckit.worktree-parallel.create.md
+    - name: speckit.worktrees.create
+      file: commands/speckit.worktrees.create.md
       description: "Spawn an isolated git worktree for a feature branch"
-    - name: speckit.worktree-parallel.list
-      file: commands/speckit.worktree-parallel.list.md
+    - name: speckit.worktrees.list
+      file: commands/speckit.worktrees.list.md
       description: "Dashboard of all active worktrees with spec-artifact and task progress"
-    - name: speckit.worktree-parallel.clean
-      file: commands/speckit.worktree-parallel.clean.md
+    - name: speckit.worktrees.clean
+      file: commands/speckit.worktrees.clean.md
       description: "Remove merged, orphaned, or stale worktrees and reclaim disk space"
 
   config:
@@ -35,7 +35,7 @@ provides:
 
 hooks:
   after_specify:
-    command: speckit.worktree-parallel.create
+    command: speckit.worktrees.create
     optional: false
     description: "Auto-spawn a worktree after a new feature is specified"
 

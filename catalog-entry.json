@@ -1,7 +1,7 @@
 {
-  "worktree-parallel": {
-    "name": "Worktree Parallel",
-    "id": "worktree-parallel",
+  "worktrees": {
+    "name": "Worktrees",
+    "id": "worktrees",
     "description": "Default-on worktree isolation for parallel agents — sibling or nested layout",
     "author": "dango85",
     "version": "1.0.0",

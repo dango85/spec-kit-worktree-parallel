@@ -3,9 +3,9 @@
 ## 1.0.0 (2026-04-13)
 
 ### Added
-- `speckit.worktree-parallel.create` command — spawn isolated worktrees with configurable layout
-- `speckit.worktree-parallel.list` command — dashboard of all active worktrees with spec-artifact and task progress
-- `speckit.worktree-parallel.clean` command — safe cleanup of merged, orphaned, or stale worktrees
+- `speckit.worktrees.create` command — spawn isolated worktrees with configurable layout
+- `speckit.worktrees.list` command — dashboard of all active worktrees with spec-artifact and task progress
+- `speckit.worktrees.clean` command — safe cleanup of merged, orphaned, or stale worktrees
 - `after_specify` hook — auto-creates worktree after feature specification (configurable)
 - Two layout modes: **sibling** (`../<repo>--<branch>`) and **nested** (`.worktrees/<branch>/`)
 - Bash script `create-worktree.sh` for deterministic worktree creation with JSON output

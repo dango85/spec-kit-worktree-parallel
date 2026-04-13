@@ -1,5 +1,5 @@
 # Worktree Parallel — configuration
-# Copy this file to .specify/extensions/worktree-parallel/worktree-config.yml
+# Copy this file to .specify/extensions/worktrees/worktree-config.yml
 # to override defaults per-repo.
 
 # Layout mode: "sibling" or "nested"
