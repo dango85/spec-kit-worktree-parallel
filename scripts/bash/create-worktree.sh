@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # spec-kit-worktree-parallel: create-worktree.sh
 # Deterministic worktree creation for parallel agents/features.
-# Called by the speckit.worktree-parallel.create command or after_specify hook.
+# Called by the speckit.worktrees.create command or after_specify hook.
 #
 # Usage:
 #   create-worktree.sh [options] <branch-name>
@@ -87,8 +87,8 @@ load_config_value() {
   if [[ -z "$file" ]]; then
     # auto-detect: extension config in .specify
     for candidate in \
-      "$REPO_ROOT/.specify/extensions/worktree-parallel/worktree-config.yml" \
-      "$REPO_ROOT/.specify/extensions/worktree-parallel/config.yml"; do
+      "$REPO_ROOT/.specify/extensions/worktrees/worktree-config.yml" \
+      "$REPO_ROOT/.specify/extensions/worktrees/config.yml"; do
       if [[ -f "$candidate" ]]; then file="$candidate"; break; fi
     done
   fi
@@ -222,7 +222,7 @@ else
   fi
 fi
 
-echo "[worktree-parallel] Created: $WT_TARGET (branch $BRANCH_NAME)" >&2
+echo "[worktrees] Created: $WT_TARGET (branch $BRANCH_NAME)" >&2
 
 # --- output ---
 if $JSON_MODE; then

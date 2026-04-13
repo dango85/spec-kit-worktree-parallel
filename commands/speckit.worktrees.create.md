@@ -24,7 +24,7 @@ You **MUST** consider the user input before proceeding (if not empty). The user 
 
 ## Configuration
 
-Read configuration from `.specify/extensions/worktree-parallel/worktree-config.yml` if it exists. Defaults apply when the file is absent.
+Read configuration from `.specify/extensions/worktrees/worktree-config.yml` if it exists. Defaults apply when the file is absent.
 
 | Key | Default | Description |
 |-----|---------|-------------|
@@ -84,7 +84,7 @@ Environment variable `SPECIFY_WORKTREE_PATH` overrides the computed path entirel
    **Next steps:**
    - Open the worktree directory in your IDE or a new terminal
    - Run `/speckit.implement` from the worktree root
-   - Run `/speckit.worktree-parallel.list` to see all active worktrees
+   - Run `/speckit.worktrees.list` to see all active worktrees
    ```
 
 ## Rules

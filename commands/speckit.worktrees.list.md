@@ -61,7 +61,7 @@ You **MUST** consider the user input before proceeding (if not empty). The user 
    **Summary**: 2 worktrees + primary checkout | 1 ready to clean (merged)
 
    **Recommended actions:**
-   - Run `/speckit.worktree-parallel.clean` to remove merged worktree (005-api-gateway)
+   - Run `/speckit.worktrees.clean` to remove merged worktree (005-api-gateway)
    ```
 
 ## Rules
