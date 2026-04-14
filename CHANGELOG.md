@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.0 (2026-04-14)
+
+### Added
+- README section **Parallel agents and the Git extension**: manual `.specify/extensions.yml` change to disable Git’s `before_specify` hook when you need a stable primary checkout; branch base `--base-ref HEAD`; honest note on `after_specify` ordering vs running specify from the worktree root
+- Command doc prerequisites: Git extension vs `git` CLI, and corrected branch-creation rule (worktree can create the branch with `git worktree add -b`)
+
+### Changed
+- Documentation-only release aligned with Spec Kit maintainer guidance: no cross-extension hook mutation on install; optional future **preset** for worktree-first command overrides called out in README
+
 ## 1.2.1 (2026-04-14)
 
 ### Removed
