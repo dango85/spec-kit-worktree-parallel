@@ -28,7 +28,7 @@ Read configuration from `.specify/extensions/worktrees/worktree-config.yml` if i
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `layout` | `sibling` | `sibling` — worktree at `../<repo>--<branch>` (IDE-friendly); `nested` — at `.worktrees/<branch>/` inside repo |
+| `layout` | `nested` | `nested` — worktree at `.worktrees/<branch>/` inside repo (self-contained); `sibling` — at `../<repo>--<branch>` (IDE-friendly) |
 | `auto_create` | `true` | When `true`, the `after_specify` hook creates a worktree without prompting |
 | `sibling_pattern` | `{{repo}}--{{branch}}` | Name pattern for sibling directories |
 | `dotworktrees_dir` | `.worktrees` | Subdirectory name for nested layout |
