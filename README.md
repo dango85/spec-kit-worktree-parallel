@@ -31,7 +31,7 @@ my-project/
 ├── src/
 ```
 
-Self-contained — everything stays in one directory. `.worktrees/` is auto-added to `.gitignore`.
+Self-contained — everything stays in one directory. `.worktrees/` is added to `.gitignore` at install time so worktree directories are never accidentally committed to the main repo. Work inside each worktree is committed on its own feature branch.
 
 ### Sibling
 
@@ -56,6 +56,13 @@ auto_create: true            # false to prompt instead of auto-creating
 sibling_pattern: "{{repo}}--{{branch}}"
 dotworktrees_dir: ".worktrees"
 ```
+
+## How worktrees stay isolated
+
+- **On install** (`specify extension add`): `.worktrees/` is added to `.gitignore` so the directory is ignored before any worktree exists
+- **On create** (`/speckit.worktrees.create`): the script double-checks `.gitignore` as a safety net
+- **Commits stay on the right branch**: each worktree has its own working tree and index — `git add` and `git commit` inside a worktree only affect that worktree's branch, not the main repo
+- **Cleanup**: `/speckit.worktrees.clean` removes worktree directories; it never deletes the git branch itself
 
 ## Commands
 
