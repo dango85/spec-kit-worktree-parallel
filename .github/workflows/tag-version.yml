@@ -1,0 +1,50 @@
+# Git does not create tags when a PR merges. This workflow tags main when
+# extension.yml's version changes so archive URLs like .../refs/tags/vX.Y.Z.zip work.
+name: Tag version on main
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "extension.yml"
+
+jobs:
+  tag-if-needed:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Parse version from extension.yml
+        id: meta
+        run: |
+          VERSION=$(python3 <<'PY'
+          import re
+          from pathlib import Path
+          text = Path("extension.yml").read_text()
+          m = re.search(r'^\s+version:\s*"(?P<v>[0-9]+\.[0-9]+\.[0-9]+)"', text, re.M)
+          if not m:
+              raise SystemExit("Could not parse extension.version in extension.yml")
+          print(m.group("v"))
+          PY
+          )
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create annotated tag if missing
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          git fetch origin --tags
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists — nothing to do."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "Pushed $TAG"
