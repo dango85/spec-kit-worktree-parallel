@@ -12,6 +12,6 @@ Thanks for the feedback — I agree with the boundary and I’m **closing / with
 
 **Presets:** Opinionated “worktree-first” command text and ordering should live in a **preset** that overrides only the commands that need to differ — so teams stay in control.
 
-**Spec-kit follow-up:** No core changes are required from this PR. I submitted a small **documentation** update: `extensions/git/README.md` — new subsection *Parallel worktrees (shared primary clone)* — pointing maintainers and users at `extensions.yml` and presets. I can open that as a **separate tiny doc PR** against `main` if you prefer it decoupled from this closed PR.
+**Spec-kit follow-up:** No spec-kit changes are required from this PR. The operational guidance (*parallel agents*, `.specify/extensions.yml`, presets) lives in the **Worktrees extension** repository README so it ships with the extension.
 
 ---
