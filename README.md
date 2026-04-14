@@ -19,7 +19,7 @@ This extension **does not** change another extension’s configuration on instal
 ## Installation
 
 ```bash
-specify extension add --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.3.0.zip
+specify extension add worktrees --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.3.0.zip
 ```
 
 ## Layout modes
