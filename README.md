@@ -7,7 +7,7 @@ A [Spec Kit](https://github.com/github/spec-kit) extension for **default-on** gi
 The community [spec-kit-worktree](https://github.com/Quratulain-bilal/spec-kit-worktree) extension is a good starting point. This extension differs in three ways:
 
 1. **Default-on** — worktrees are created automatically after `/speckit.specify`. Opt *out* with `--in-place`, rather than opting in.
-2. **Sibling-dir layout** — worktrees live at `../<repo>--<branch>` by default, so each feature gets its own top-level IDE window. Nested `.worktrees/` is available as an option.
+2. **Nested layout by default** — worktrees live at `.worktrees/<branch>/` inside the repo (gitignored, self-contained). Sibling-dir layout (`../<repo>--<branch>`) is available as an option for IDE-per-feature workflows.
 3. **Deterministic bash script** — a real script (`create-worktree.sh`) with `--json` output, `--dry-run`, and `SPECIFY_WORKTREE_PATH` override, suitable for CI and scripted workflows.
 
 ## Installation
@@ -18,20 +18,7 @@ specify extension add --from https://github.com/dango85/spec-kit-worktree-parall
 
 ## Layout modes
 
-### Sibling (default)
-
-Each worktree is a sibling directory of the primary clone:
-
-```
-parent/
-├── my-project/                  ← primary checkout (main)
-├── my-project--005-user-auth/   ← worktree (005-user-auth branch)
-├── my-project--006-chat/        ← worktree (006-chat branch)
-```
-
-Open each directory in its own IDE window. No `.gitignore` changes needed.
-
-### Nested
+### Nested (default)
 
 Worktrees live inside the repo under `.worktrees/` (auto-gitignored):
 
@@ -44,14 +31,27 @@ my-project/
 ├── src/
 ```
 
-Switch with `layout: nested` in `worktree-config.yml`.
+Self-contained — everything stays in one directory. `.worktrees/` is auto-added to `.gitignore`.
+
+### Sibling
+
+Each worktree is a sibling directory of the primary clone:
+
+```
+parent/
+├── my-project/                  ← primary checkout (main)
+├── my-project--005-user-auth/   ← worktree (005-user-auth branch)
+├── my-project--006-chat/        ← worktree (006-chat branch)
+```
+
+Open each directory in its own IDE window. Switch with `layout: "sibling"` in `worktree-config.yml`.
 
 ## Configuration
 
 Create `.specify/extensions/worktrees/worktree-config.yml` to override defaults:
 
 ```yaml
-layout: "sibling"           # sibling | nested
+layout: "nested"            # nested | sibling
 auto_create: true            # false to prompt instead of auto-creating
 sibling_pattern: "{{repo}}--{{branch}}"
 dotworktrees_dir: ".worktrees"
@@ -93,11 +93,11 @@ Answering **Y** disables the hook. Answering **N** installs the extension withou
 The bash script can be called directly for automation:
 
 ```bash
-# Create a sibling worktree for branch 005-user-auth
+# Create a nested worktree for branch 005-user-auth (default)
 bash scripts/bash/create-worktree.sh --json 005-user-auth
 
-# Nested layout
-bash scripts/bash/create-worktree.sh --json --layout nested 005-user-auth
+# Sibling layout instead
+bash scripts/bash/create-worktree.sh --json --layout sibling 005-user-auth
 
 # Explicit path
 bash scripts/bash/create-worktree.sh --json --path /tmp/my-worktree 005-user-auth

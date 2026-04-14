@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 (2026-04-14)
+
+### Changed
+- Default layout switched from `sibling` to `nested` — worktrees now created at `.worktrees/<branch>/` inside the repo by default
+- Sibling layout (`../<repo>--<branch>`) remains available via `layout: "sibling"` in config
+
 ## 1.1.0 (2026-04-13)
 
 ### Added
