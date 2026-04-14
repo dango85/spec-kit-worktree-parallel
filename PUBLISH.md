@@ -27,5 +27,5 @@ Reference issues: #61, #1476
 ## 3. Install in any repo
 
 ```bash
-specify extension add --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.0.0.zip
+specify extension add --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.3.0.zip
 ```
