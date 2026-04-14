@@ -74,9 +74,28 @@ dotworktrees_dir: ".worktrees"
 | `/speckit.worktrees.list` | Dashboard: status, artifacts, tasks | No |
 | `/speckit.worktrees.clean` | Remove merged/stale worktrees | Yes |
 
-## Hook
+## Hooks
 
 **`after_specify`** — automatically creates a worktree after a new feature is specified. Controlled by the `auto_create` config value.
+
+## Hook overrides
+
+This extension declares `modifies_hooks` in `extension.yml` to **disable** the git extension's `before_specify -> speckit.git.feature` hook on install. This keeps the primary checkout on a stable branch (e.g. `main`) while worktrees handle feature branch isolation.
+
+During `specify extension add`, you will see a consent prompt:
+
+```
+Extension 'worktrees' requests the following hook modifications:
+
+  Hook                Target Extension  Command               Action   Reason
+  before_specify      git               speckit.git.feature   disable  Worktree-parallel keeps primary checkout...
+
+Apply these modifications? [Y/n]:
+```
+
+Answering **Y** disables the hook. Answering **N** installs the extension without modifying hooks (you can disable it manually in `.specify/extensions.yml`). Removing the extension via `specify extension remove worktrees` restores the original hook state.
+
+**Requires**: Spec Kit with `modifies_hooks` support (see [github/spec-kit#2209](https://github.com/github/spec-kit/pull/2209)).
 
 ## Script usage
 

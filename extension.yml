@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: worktrees
   name: "Worktrees"
-  version: "1.2.1"
+  version: "1.2.2"
   description: "Default-on worktree isolation for parallel agents — sibling or nested layout"
   author: "dango85"
   repository: "https://github.com/dango85/spec-kit-worktree-parallel"
@@ -43,6 +43,13 @@ lifecycle:
   post_install:
     script: scripts/bash/post-install.sh
     description: "Add .worktrees/ to .gitignore so worktree directories are never committed to the main repo"
+
+modifies_hooks:
+  - hook: before_specify
+    extension: git
+    command: speckit.git.feature
+    action: disable
+    reason: "Worktree-parallel keeps primary checkout on a stable branch (e.g. main); branch creation is handled by git worktree add -b during after_specify"
 
 tags:
   - "worktree"
