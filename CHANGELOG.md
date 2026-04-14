@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 (2026-04-14)
+
+### Removed
+- `modifies_hooks` integration (revert of PR #1). The extension no longer disables the git extension’s `before_specify → speckit.git.feature` hook on install. If you rely on a stable primary branch with parallel worktrees, disable or adjust that hook manually in your Spec Kit config.
+
 ## 1.2.0 (2026-04-14)
 
 ### Changed
@@ -9,12 +14,6 @@
 ### Added
 - `post_install` lifecycle script — adds `.worktrees/` to `.gitignore` at install time (not just at first worktree creation)
 - README section "How worktrees stay isolated" documenting gitignore + commit isolation model
-
-## 1.1.0 (2026-04-13)
-
-### Added
-- `modifies_hooks` declaration: automatically disables `before_specify -> speckit.git.feature` on install (with user consent) so the primary checkout stays on a stable branch
-- Requires Spec Kit with `modifies_hooks` support ([github/spec-kit#2209](https://github.com/github/spec-kit/pull/2209))
 
 ## 1.0.0 (2026-04-13)
 
