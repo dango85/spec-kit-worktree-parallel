@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.2 (2026-04-14)
+
+### Added
+- Restored `modifies_hooks`: on install (with consent), disables `before_specify -> speckit.git.feature` so the primary checkout can stay on a stable branch while worktrees own feature branches. Requires Spec Kit with `modifies_hooks` support ([github/spec-kit#2209](https://github.com/github/spec-kit/pull/2209)).
+
 ## 1.2.1 (2026-04-14)
 
 ### Removed
