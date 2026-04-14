@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1 (2026-04-14)
+
+### Added
+- `extension.install_notes` in `extension.yml` — after `specify extension add`, Specify prints this note when using a `specify-cli` build that supports `install_notes` (see upstream spec-kit). Reminds you to optionally disable the Git extension’s `before_specify` hook for parallel worktrees; full `.specify/extensions.yml` snippet remains in the README
+
 ## 1.3.0 (2026-04-14)
 
 ### Added
