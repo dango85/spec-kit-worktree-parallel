@@ -2,6 +2,8 @@
 
 [![Tests](https://github.com/dango85/spec-kit-worktree-parallel/actions/workflows/test.yml/badge.svg)](https://github.com/dango85/spec-kit-worktree-parallel/actions/workflows/test.yml)
 
+**Contributing:** use a **branch + pull request** into `main` — see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 A [Spec Kit](https://github.com/github/spec-kit) extension for **default-on** git worktree isolation — work on multiple features (or run parallel agents) without checkout switching.
 
 ## Why another worktree extension?
@@ -10,12 +12,14 @@ The community [spec-kit-worktree](https://github.com/Quratulain-bilal/spec-kit-w
 
 1. **Default-on** — worktrees are created automatically after `/speckit.specify`. Opt *out* with `--in-place`, rather than opting in.
 2. **Nested layout by default** — worktrees live at `.worktrees/<branch>/` inside the repo (gitignored, self-contained). Sibling-dir layout (`../<repo>--<branch>`) is available as an option for IDE-per-feature workflows.
-3. **Deterministic bash script** — a real script (`create-worktree.sh`) with `--json` output, `--dry-run`, and `SPECIFY_WORKTREE_PATH` override, suitable for CI and scripted workflows.
+3. **Deterministic bash script** — a real script (`create-worktree.sh`) with `--json` output, `--dry-run`, `--base-ref`, and `SPECIFY_WORKTREE_PATH` override, suitable for CI and scripted workflows.
+
+This extension **does not** change another extension’s configuration on install (for example it does not disable the Git extension’s hooks). You opt into hook changes explicitly in `.specify/extensions.yml` when you need them (see below).
 
 ## Installation
 
 ```bash
-specify extension add --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.0.0.zip
+specify extension add --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.3.0.zip
 ```
 
 ## Layout modes
@@ -47,6 +51,30 @@ parent/
 ```
 
 Open each directory in its own IDE window. Switch with `layout: "sibling"` in `worktree-config.yml`.
+
+## Parallel agents and the Git extension
+
+**Git extension vs `git` on your PATH:** This extension requires the **`git` CLI** only. It does not require the Spec Kit **Git extension** (`speckit.git.*`). That distinction matters because the Git extension registers **`before_specify → speckit.git.feature`**, which runs `git checkout` / `git checkout -b` on **whatever directory the agent is using as the repo root**. On a **shared** primary clone, that moves `HEAD` for everyone and fights parallel worktrees.
+
+**What this extension does instead:** `create-worktree.sh` uses **`git worktree add`** (and **`git worktree add -b`** for a new branch). That creates the feature branch **inside the new worktree** and leaves the primary checkout’s `HEAD` alone.
+
+**If the Git extension is installed and you want a stable primary checkout:** edit **`.specify/extensions.yml`** and set **`enabled: false`** on the `before_specify` entry whose **`extension`** is **`git`** and **`command`** is **`speckit.git.feature`**. Your file may include extra keys (`optional`, `prompt`, …); only `enabled` needs to change.
+
+```yaml
+hooks:
+  before_specify:
+    - extension: git
+      command: speckit.git.feature
+      enabled: false
+      optional: false
+      # …other keys from your install stay as-is…
+```
+
+After disabling that hook, **feature branch naming** is no longer applied by `speckit.git.feature` before specify. Use **`create-new-feature.sh --dry-run --json`** from the Git extension if you still want the same numbering **without** a checkout, or agree on branch names in the specify step. **Branch from current `HEAD`** when creating a worktree: pass **`--base-ref HEAD`** to `create-worktree.sh` (default base is `main` / `origin/main` when present).
+
+**`after_specify` ordering:** This extension’s hook runs **after** `/speckit.specify`. Spec files are written to the **current** working tree first, then the worktree is created. For **full** isolation, run specify **from the worktree root** (worktree-first workflow). A Spec Kit **preset** that overrides only the commands you need is the maintainers’ recommended way to encode that workflow explicitly; this repo does not ship that preset yet.
+
+**Spec Kit 1.0.0:** The Git extension is expected to become **opt-in**. Do not assume `before_specify` / `speckit.git.feature` is always present; keep the worktree flow valid with Git extension off.
 
 ## Configuration
 

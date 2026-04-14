@@ -1,13 +1,23 @@
 # Publishing steps
 
-## 1. Push to GitHub
+## 1. Land changes on `main` via pull request
+
+Do **not** push routine commits directly to `main`. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
 cd /Users/abiyadav/SourceCode/spec-kit-worktree-parallel
+git fetch origin && git checkout -b your-branch origin/main
+# … commit …
+git push -u origin your-branch
+gh pr create --base main --head your-branch
+# After review, merge the PR on GitHub
+```
+
+Initial repo setup (one-time):
+
+```bash
 gh repo create dango85/spec-kit-worktree-parallel --public --source . --push
-# or manually:
-git remote add origin https://github.com/dango85/spec-kit-worktree-parallel.git
-git push -u origin main --tags
+# or: git remote add origin https://github.com/dango85/spec-kit-worktree-parallel.git
 ```
 
 ## 2. Submit catalog PR to github/spec-kit
@@ -27,5 +37,5 @@ Reference issues: #61, #1476
 ## 3. Install in any repo
 
 ```bash
-specify extension add --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.0.0.zip
+specify extension add --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.3.0.zip
 ```

@@ -22,6 +22,8 @@ You **MUST** consider the user input before proceeding (if not empty). The user 
 1. Verify the project is a git repository (`git rev-parse --show-toplevel`)
 2. Verify `git worktree` is available (`git worktree list` succeeds)
 
+**Git extension (optional):** The Spec Kit Git extension’s `before_specify → speckit.git.feature` checks out the feature branch on the **current** tree. For parallel agents on one primary clone, maintainers recommend disabling that hook in `.specify/extensions.yml` and relying on `git worktree add -b` (this script) so the primary `HEAD` stays put. See the extension README *Parallel agents and the Git extension*.
+
 ## Configuration
 
 Read configuration from `.specify/extensions/worktrees/worktree-config.yml` if it exists. Defaults apply when the file is absent.
@@ -50,6 +52,7 @@ Environment variable `SPECIFY_WORKTREE_PATH` overrides the computed path entirel
    bash "$(dirname "$0")/../scripts/bash/create-worktree.sh" \
      --json \
      [--layout sibling|nested] \
+     [--base-ref HEAD|main|origin/main|…] \
      [--path <override>] \
      [--in-place] \
      [--dry-run] \
@@ -67,7 +70,7 @@ Environment variable `SPECIFY_WORKTREE_PATH` overrides the computed path entirel
    - Run `git worktree add -b <branch> <path> <base-ref>` (new branch) or `git worktree add <path> <branch>` (existing branch)
    - For nested layout, ensure `.worktrees/` is in `.gitignore`
 
-3. **Verify spec artifacts**: Check that `specs/<branch>/` exists in the new worktree. List which artifacts are present (spec.md, plan.md, tasks.md).
+3. **Verify spec artifacts**: Prefer `specs/<branch>/` **in the worktree** when using a worktree-first workflow. If `/speckit.specify` ran on the primary checkout first (`after_specify` hook order), artifacts may still be under the primary tree — report where they actually are.
 
 4. **Report**: Output a summary:
 
@@ -93,4 +96,4 @@ Environment variable `SPECIFY_WORKTREE_PATH` overrides the computed path entirel
 - **One worktree per branch** — refuse to create a duplicate; report the existing path instead
 - **Never modify the primary checkout** — worktree operations happen in the new directory only
 - **Always update .gitignore for nested layout** — add the `dotworktrees_dir` value if not present
-- **Validate branch exists** — for existing branches; for new branches the `after_specify` hook should have already created the branch via the git extension
+- **New vs existing branch** — if the branch does not exist locally, `git worktree add -b` creates it from the configured base ref; if it already exists, the worktree attaches to it. Do not assume the Git extension ran `speckit.git.feature` first (it may be disabled for parallel worktrees)
