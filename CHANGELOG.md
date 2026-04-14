@@ -6,6 +6,10 @@
 - Default layout switched from `sibling` to `nested` — worktrees now created at `.worktrees/<branch>/` inside the repo by default
 - Sibling layout (`../<repo>--<branch>`) remains available via `layout: "sibling"` in config
 
+### Added
+- `post_install` lifecycle script — adds `.worktrees/` to `.gitignore` at install time (not just at first worktree creation)
+- README section "How worktrees stay isolated" documenting gitignore + commit isolation model
+
 ## 1.1.0 (2026-04-13)
 
 ### Added

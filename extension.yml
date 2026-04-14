@@ -39,6 +39,11 @@ hooks:
     optional: false
     description: "Auto-spawn a worktree after a new feature is specified"
 
+lifecycle:
+  post_install:
+    script: scripts/bash/post-install.sh
+    description: "Add .worktrees/ to .gitignore so worktree directories are never committed to the main repo"
+
 modifies_hooks:
   - hook: before_specify
     extension: git
