@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: worktrees
   name: "Worktrees"
-  version: "1.1.0"
+  version: "1.2.0"
   description: "Default-on worktree isolation for parallel agents — sibling or nested layout"
   author: "dango85"
   repository: "https://github.com/dango85/spec-kit-worktree-parallel"
@@ -55,7 +55,7 @@ tags:
 
 config:
   defaults:
-    layout: "sibling"
+    layout: "nested"
     auto_create: true
     sibling_pattern: "{{repo}}--{{branch}}"
     dotworktrees_dir: ".worktrees"

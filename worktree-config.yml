@@ -2,10 +2,10 @@
 # Copy this file to .specify/extensions/worktrees/worktree-config.yml
 # to override defaults per-repo.
 
-# Layout mode: "sibling" or "nested"
-#   sibling — worktree at ../<repo>--<branch> (default; IDE-friendly, one window per feature)
-#   nested  — worktree at .worktrees/<branch>/ inside the repo (gitignored)
-layout: "sibling"
+# Layout mode: "nested" or "sibling"
+#   nested  — worktree at .worktrees/<branch>/ inside the repo (default; gitignored, self-contained)
+#   sibling — worktree at ../<repo>--<branch> (IDE-friendly, one window per feature)
+layout: "nested"
 
 # Auto-create worktree after /speckit.specify without prompting.
 # Set to false to get a confirmation prompt instead.
