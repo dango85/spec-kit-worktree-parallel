@@ -15,6 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Configure git for tests
+        run: |
+          git config --global user.name "test"
+          git config --global user.email "test@test.com"
+
       - name: Run create-worktree tests
         run: bash tests/test-create-worktree.sh
 
