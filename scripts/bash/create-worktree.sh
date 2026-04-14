@@ -20,7 +20,7 @@
 set -euo pipefail
 
 # --- defaults ---
-LAYOUT="sibling"
+LAYOUT="nested"
 WORKTREE_PATH_OVERRIDE=""
 IN_PLACE=false
 JSON_MODE=false
@@ -45,7 +45,7 @@ while [[ $# -gt 0 ]]; do
       echo "Usage: $0 [options] <branch-name>"
       echo ""
       echo "Options:"
-      echo "  --layout sibling|nested   Worktree location strategy (default: sibling)"
+      echo "  --layout nested|sibling   Worktree location strategy (default: nested)"
       echo "  --path <dir>              Explicit worktree path (overrides layout)"
       echo "  --in-place                Skip worktree creation (no-op exit 0)"
       echo "  --json                    Output JSON instead of key=value"
