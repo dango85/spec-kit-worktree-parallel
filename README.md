@@ -19,8 +19,36 @@ This extension **does not** change another extension’s configuration on instal
 ## Installation
 
 ```bash
-specify extension add worktrees --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.3.1.zip
+specify extension add worktrees --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.3.2.zip
 ```
+
+## Cursor IDE: best results with Spec Kit
+
+Cursor implements **editor-native** isolation: **`/worktree`** keeps the **rest of that chat** in a **separate checkout**, with optional **`.cursor/worktrees.json`** to run setup (deps, env files) using **`$ROOT_WORKTREE_PATH`**. See the official **[Cursor worktrees](https://cursor.com/docs/configuration/worktrees)** documentation and the **[Cursor CLI `--worktree` flag](https://cursor.com/docs/cli/using.md#cli-worktrees)** for the same behavior outside the UI.
+
+### Recommended pattern (agent focus = one tree)
+
+1. **Start the feature** with **`/worktree …`** (or **`/best-of-n`** when comparing models). That aligns **agent tools and cwd** with Cursor’s isolated checkout.
+2. Add **`.cursor/worktrees.json`** at your **main project root** so each new checkout gets a working dev environment (copy `.env`, install packages, migrations, etc.). Copy and edit **`examples/cursor-worktrees.spec-kit.example.json`** from this repo as a starting point for Spec Kit repos.
+3. Run **`/speckit.specify`**, then plan / tasks / implement **in the same chat** so spec artifacts and edits stay in that checkout.
+
+### How this extension fits (do not double-isolate by accident)
+
+| Mechanism | Who creates it | Typical use |
+|-----------|----------------|-------------|
+| **Cursor `/worktree`** | Cursor (`~/.cursor/worktrees`, cleanup, setup hooks) | **Best default for Cursor users** — session root matches isolation. |
+| **This extension (`after_specify`)** | `git worktree add` under **`.worktrees/`** or sibling dirs | **In-repo** worktrees, **CLI/CI**, **non-Cursor** editors, **list/clean** helpers. |
+
+Using **both** at once for the same feature usually adds **confusion** (two different worktree locations and mental models). For **Cursor-heavy** teams:
+
+- Prefer **`/worktree` + `.cursor/worktrees.json`** for isolation, and set **`auto_create: false`** in **`worktree-config.yml`** so this extension does **not** also spawn an in-repo worktree after every specify — invoke **`/speckit.worktrees.create`** manually when you still want a **git** worktree inside the repo (e.g. sibling layout for a second IDE window).
+
+If you keep **`auto_create: true`**, you still get in-repo worktrees after specify; treat that as the **non-Cursor** or **second checkout** path and understand specs may land on the **primary** tree first (see **Parallel agents and the Git extension** below).
+
+### Summary
+
+- **Cursor:** isolation + agent focus → **`/worktree`** + **`worktrees.json`**.  
+- **This extension:** **`git worktree`** automation, dashboards, cleanup — complements Cursor; it does **not** replace Cursor’s chat root behavior.
 
 ## Layout modes
 
@@ -82,7 +110,7 @@ Create `.specify/extensions/worktrees/worktree-config.yml` to override defaults:
 
 ```yaml
 layout: "nested"            # nested | sibling
-auto_create: true            # false to prompt instead of auto-creating
+auto_create: true           # Cursor + /worktree users: set false to avoid in-repo worktrees after every specify
 sibling_pattern: "{{repo}}--{{branch}}"
 dotworktrees_dir: ".worktrees"
 ```
