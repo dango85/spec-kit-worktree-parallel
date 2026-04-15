@@ -3,15 +3,15 @@ schema_version: "1.0"
 extension:
   id: worktrees
   name: "Worktrees"
-  version: "1.3.1"
+  version: "1.4.0"
   description: "Default-on worktree isolation for parallel agents — sibling or nested layout"
   author: "dango85"
   repository: "https://github.com/dango85/spec-kit-worktree-parallel"
   license: "MIT"
   install_notes: |
-    Parallel worktrees: if the Spec Kit Git extension is installed, consider disabling its
-    before_specify → speckit.git.feature hook in .specify/extensions.yml (set enabled: false)
-    so the primary checkout is not switched for every agent. Full YAML snippet: README "Git extension vs worktrees".
+    v1.4+: worktree-first SDD uses before_specify → speckit.worktrees.prepare-specify. Disable Git
+    speckit.git.feature before_specify when using prepare (README). Open Cursor: use JSON
+    open_ide_hint from the hook (e.g. cursor <path>). Cursor /worktree: README "Cursor IDE".
 
 requires:
   speckit_version: ">=0.4.0"
@@ -30,6 +30,9 @@ provides:
     - name: speckit.worktrees.clean
       file: commands/speckit.worktrees.clean.md
       description: "Remove merged, orphaned, or stale worktrees and reclaim disk space"
+    - name: speckit.worktrees.prepare-specify
+      file: commands/speckit.worktrees.prepare-specify.md
+      description: "Reserve branch + create git worktree before /speckit.specify (worktree-first SDD)"
 
   config:
     - name: "worktree-config.yml"
@@ -38,10 +41,10 @@ provides:
       required: false
 
 hooks:
-  after_specify:
-    command: speckit.worktrees.create
+  before_specify:
+    command: speckit.worktrees.prepare-specify
     optional: false
-    description: "Auto-spawn a worktree after a new feature is specified"
+    description: "Create git worktree before specify so specs land inside the worktree (disable Git speckit.git.feature before_specify)"
 
 lifecycle:
   post_install:

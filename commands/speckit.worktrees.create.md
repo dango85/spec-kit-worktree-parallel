@@ -31,7 +31,7 @@ Read configuration from `.specify/extensions/worktrees/worktree-config.yml` if i
 | Key | Default | Description |
 |-----|---------|-------------|
 | `layout` | `nested` | `nested` — worktree at `.worktrees/<branch>/` inside repo (self-contained); `sibling` — at `../<repo>--<branch>` (IDE-friendly) |
-| `auto_create` | `true` | When `true`, the `after_specify` hook creates a worktree without prompting |
+| `auto_create` | `true` | When `true`, optional automation for **manual** `/speckit.worktrees.create` (v1.4 default SDD uses **`before_specify` → prepare**, not `after_specify`) |
 | `sibling_pattern` | `{{repo}}--{{branch}}` | Name pattern for sibling directories |
 | `dotworktrees_dir` | `.worktrees` | Subdirectory name for nested layout |
 
@@ -42,7 +42,7 @@ Environment variable `SPECIFY_WORKTREE_PATH` overrides the computed path entirel
 1. **Determine target branch**:
    - If user specifies a branch name, use that
    - If user says `current`, use the output of `git branch --show-current`
-   - If no input and this is an `after_specify` hook call, use the branch that `/speckit.specify` just created (read from `SPECIFY_FEATURE` env var or the most recent feature branch)
+   - If no input and this run was triggered from a legacy **`after_specify`** hook, use the branch `/speckit.specify` just created (`SPECIFY_FEATURE` env or most recent feature branch). **v1.4+** uses **`before_specify` → prepare** instead; prefer **`speckit.worktrees.prepare-specify`** for that flow.
    - Validate the branch exists in git (local or remote)
 
 2. **Invoke the script**:
