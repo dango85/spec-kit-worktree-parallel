@@ -126,9 +126,30 @@ dotworktrees_dir: ".worktrees"
 
 | Command | Description | Modifies files? |
 |---------|-------------|-----------------|
+| `/speckit.worktrees.specify` | Worktree-first specify flow: create/reuse a worktree, then write the spec inside it | Yes |
 | `/speckit.worktrees.create` | Spawn a worktree for a feature branch | Yes |
 | `/speckit.worktrees.list` | Dashboard: status, artifacts, tasks | No |
 | `/speckit.worktrees.clean` | Remove merged/stale worktrees | Yes |
+
+## Worktree-first specify workflow
+
+If you want the spec itself isolated from the start, use `/speckit.worktrees.specify` instead of `/speckit.specify` from the primary checkout:
+
+```text
+/speckit.worktrees.specify 005-user-auth Build sign-in with email and passkeys
+```
+
+That command creates or reuses the feature worktree first, then treats the returned worktree path as the project root for the normal specify flow. The spec should be written under `<worktree>/specs/<branch>/`, and all follow-up `/speckit.plan`, `/speckit.tasks`, implementation, commit, push, and PR work should run from that worktree.
+
+This is the recommended answer to the "pre-hook for specify" workflow: creating the worktree as an explicit command is predictable because it can pin the branch and path before any spec artifacts are written. A `before_specify` hook alone is not enough unless the surrounding product also changes the active project root for the rest of the specify command.
+
+For VS Code, the most reliable variant remains one window per active worktree:
+
+1. Run `/speckit.worktrees.specify <branch> <feature description>` from the primary checkout.
+2. Open the returned worktree path in a new VS Code window.
+3. Continue `/speckit.plan` and later steps in that worktree window.
+4. Commit, push, and open the PR from the worktree.
+5. Close the worktree window and run `/speckit.worktrees.clean` from the primary checkout when done.
 
 ## Hook
 

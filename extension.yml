@@ -22,6 +22,9 @@ requires:
 
 provides:
   commands:
+    - name: speckit.worktrees.specify
+      file: commands/speckit.worktrees.specify.md
+      description: "Create a worktree before writing the feature spec"
     - name: speckit.worktrees.create
       file: commands/speckit.worktrees.create.md
       description: "Spawn an isolated git worktree for a feature branch"
