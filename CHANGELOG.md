@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.2 (2026-04-15)
+
+### Added
+- README section **Cursor IDE: best results with Spec Kit** — `/worktree`, `.cursor/worktrees.json`, avoiding double isolation with this extension’s `after_specify` hook; links to [Cursor worktrees](https://cursor.com/docs/configuration/worktrees) and Cursor CLI
+- **`examples/cursor-worktrees.spec-kit.example.json`** and **`examples/README.md`** — starter `worktrees.json` for copying `.env` / optional `.specify` into Cursor-managed checkouts
+
+### Changed
+- **`install_notes`**: points Cursor users at official worktrees docs and the new README section
+
 ## 1.3.1 (2026-04-14)
 
 ### Added
