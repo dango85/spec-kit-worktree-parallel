@@ -113,6 +113,11 @@ layout: "nested"            # nested | sibling
 auto_create: true           # Cursor + /worktree users: set false to avoid in-repo worktrees after every specify
 sibling_pattern: "{{repo}}--{{branch}}"
 dotworktrees_dir: ".worktrees"
+
+# Optional VS Code handoff for /speckit.worktrees.specify
+vscode_open_after_create: false
+vscode_open_mode: "new-window"   # new-window | reuse-window | print-command
+vscode_command: "code"
 ```
 
 ## How worktrees stay isolated
@@ -150,6 +155,30 @@ For VS Code, the most reliable variant remains one window per active worktree:
 3. Continue `/speckit.plan` and later steps in that worktree window.
 4. Commit, push, and open the PR from the worktree.
 5. Close the worktree window and run `/speckit.worktrees.clean` from the primary checkout when done.
+
+### VS Code handoff
+
+`/speckit.worktrees.specify` can hand the created worktree to VS Code via the `code` CLI:
+
+```text
+/speckit.worktrees.specify 005-user-auth Build sign-in --open-vscode
+```
+
+By default this uses a new window:
+
+```bash
+code -n <worktree-path>
+```
+
+You can make that the project default in `.specify/extensions/worktrees/worktree-config.yml`:
+
+```yaml
+vscode_open_after_create: true
+vscode_open_mode: "new-window"
+vscode_command: "code"
+```
+
+Use `vscode_open_mode: "reuse-window"` only when you explicitly want VS Code to replace the current window with the worktree. If the `code` CLI is unavailable, or if `vscode_open_mode: "print-command"` is set, the command reports the exact `code -n <worktree-path>` command to run manually.
 
 ## Hook
 

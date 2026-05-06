@@ -16,3 +16,15 @@ sibling_pattern: "{{repo}}--{{branch}}"
 
 # Directory name for nested layout (relative to repo root, auto-gitignored).
 dotworktrees_dir: ".worktrees"
+
+# VS Code handoff for /speckit.worktrees.specify.
+#   false         — print the worktree path and let the user open it manually
+#   true          — open the worktree after creation when the VS Code CLI is available
+vscode_open_after_create: false
+
+# VS Code open mode:
+#   new-window    — code -n <worktree-path> (recommended)
+#   reuse-window  — code -r <worktree-path> (explicit opt-in)
+#   print-command — only print the command to run
+vscode_open_mode: "new-window"
+vscode_command: "code"

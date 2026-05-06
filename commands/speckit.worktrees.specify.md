@@ -16,6 +16,7 @@ You **MUST** consider the user input before proceeding. The user input should in
 - A feature branch name or slug (for example `005-user-auth`)
 - The feature description to specify
 - Optional worktree flags accepted by `/speckit.worktrees.create`, such as `--layout sibling`, `--path <dir>`, or `--base-ref HEAD`
+- Optional IDE handoff flags: `--open-vscode`, `--no-open-vscode`, `--vscode-new-window`, `--vscode-reuse-window`, or `--vscode-print-command`
 
 If the branch name is missing, ask for it before creating anything. If the feature description is missing, create the worktree only after the user confirms they want to continue specifying in that worktree.
 
@@ -25,11 +26,32 @@ If the branch name is missing, ask for it before creating anything. If the featu
 2. Verify the working tree has the intended base state for the new feature
 3. Verify `git worktree` is available (`git worktree list` succeeds)
 
+## Configuration
+
+Read configuration from `.specify/extensions/worktrees/worktree-config.yml` if it exists. Defaults apply when the file is absent.
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `vscode_open_after_create` | `false` | Open the returned worktree with the VS Code CLI after creation |
+| `vscode_open_mode` | `new-window` | `new-window`, `reuse-window`, or `print-command` |
+| `vscode_command` | `code` | VS Code CLI command to run |
+
+User flags override configuration for the current command:
+
+| Flag | Behavior |
+|------|----------|
+| `--open-vscode` | Enable VS Code handoff |
+| `--no-open-vscode` | Disable VS Code handoff |
+| `--vscode-new-window` | Run `code -n <worktree-path>` |
+| `--vscode-reuse-window` | Run `code -r <worktree-path>` |
+| `--vscode-print-command` | Print the command instead of running it |
+
 ## Outline
 
 1. **Parse the request**:
    - Extract the target branch name
    - Extract any worktree flags
+   - Extract any VS Code handoff flags
    - Preserve the remaining text as the feature description
 
 2. **Create the worktree first**:
@@ -51,7 +73,29 @@ If the branch name is missing, ask for it before creating anything. If the featu
    - Run all file reads, writes, scripts, git commands, and follow-up Spec Kit steps from that path
    - If using an IDE, open the returned path as its own window before continuing
 
-4. **Write the spec inside the worktree**:
+4. **Open VS Code when requested**:
+   If VS Code handoff is enabled, open or print the worktree command after creation:
+
+   ```bash
+   if [[ "$VSCODE_OPEN_MODE" == "print-command" ]]; then
+     echo "$VSCODE_COMMAND -n \"$WORKTREE_PATH\""
+   elif command -v "$VSCODE_COMMAND" >/dev/null 2>&1; then
+     if [[ "$VSCODE_OPEN_MODE" == "reuse-window" ]]; then
+       "$VSCODE_COMMAND" -r "$WORKTREE_PATH"
+     else
+       "$VSCODE_COMMAND" -n "$WORKTREE_PATH"
+     fi
+   else
+     echo "VS Code CLI not found. Run: code -n \"$WORKTREE_PATH\""
+   fi
+   ```
+
+   Rules:
+   - Use `new-window` unless the user or config explicitly chooses `reuse-window`
+   - Never replace the current VS Code window unless `reuse-window` was explicit
+   - If the CLI is unavailable or mode is `print-command`, print the exact command to run
+
+5. **Write the spec inside the worktree**:
    Continue the normal `/speckit.specify` workflow from the worktree root using the feature description. Spec artifacts should be created under:
 
    ```text
@@ -60,7 +104,7 @@ If the branch name is missing, ask for it before creating anything. If the featu
 
    Do not write spec artifacts to the primary checkout.
 
-5. **Report**:
+6. **Report**:
    Output a concise summary:
 
    ```markdown
@@ -73,6 +117,7 @@ If the branch name is missing, ask for it before creating anything. If the featu
    | **Spec root** | /Users/me/code/my-project/.worktrees/005-user-auth/specs/005-user-auth |
 
    **Next steps:**
+   - Open VS Code: code -n /Users/me/code/my-project/.worktrees/005-user-auth
    - Continue `/speckit.plan` from the worktree root
    - Keep commits and PR work inside that worktree
    - Return to the primary checkout only for `/speckit.worktrees.clean`
@@ -83,5 +128,6 @@ If the branch name is missing, ask for it before creating anything. If the featu
 - Create or reuse the worktree before writing any spec files
 - Never run `git checkout` in the primary checkout as part of this workflow
 - Prefer `--base-ref HEAD` when the primary checkout has committed spec seed work that the new worktree must include
+- Open VS Code in a new window by default when VS Code handoff is enabled; reuse the current window only with an explicit user/config opt-in
 - Keep all generated artifacts, plans, tasks, implementation changes, commits, and PR operations in the worktree
 - Use `/speckit.worktrees.clean` from the primary checkout after the PR is merged or the worktree is no longer needed
