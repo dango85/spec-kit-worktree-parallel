@@ -4,6 +4,7 @@
 
 ### Added
 - `/speckit.worktrees.specify` command for a worktree-first specify workflow: create or reuse the feature worktree before writing spec artifacts, then continue the normal Spec Kit flow from the worktree root
+- VS Code handoff guidance for `/speckit.worktrees.specify`: optional `--open-vscode` behavior, configurable `code -n <worktree-path>` new-window default, and explicit reuse/print modes
 
 ### Changed
 - README now documents the recommended response to "pre-hook for specify": use an explicit worktree-first command unless Spec Kit itself can also switch the active project root for the rest of `/speckit.specify`
