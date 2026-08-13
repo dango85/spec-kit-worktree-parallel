@@ -20,7 +20,7 @@
 set -euo pipefail
 
 # --- defaults ---
-LAYOUT="nested"
+LAYOUT="sibling"
 WORKTREE_PATH_OVERRIDE=""
 IN_PLACE=false
 JSON_MODE=false
@@ -45,7 +45,7 @@ while [[ $# -gt 0 ]]; do
       echo "Usage: $0 [options] <branch-name>"
       echo ""
       echo "Options:"
-      echo "  --layout nested|sibling   Worktree location strategy (default: nested)"
+      echo "  --layout sibling|nested   Worktree location strategy (default: sibling)"
       echo "  --path <dir>              Explicit worktree path (overrides layout)"
       echo "  --in-place                Skip worktree creation (no-op exit 0)"
       echo "  --json                    Output JSON instead of key=value"
@@ -98,6 +98,20 @@ load_config_value() {
     if [[ -n "$val" ]]; then echo "$val"; return; fi
   fi
   echo "$default"
+}
+
+make_relative_path() {
+  local from_dir="$1"
+  local to_target="$2"
+  if command -v python3 >/dev/null 2>&1; then
+    python3 -c "import os.path, sys; print(os.path.relpath(sys.argv[2], sys.argv[1]).replace('\\\\', '/'))" "$from_dir" "$to_target"
+  elif command -v python >/dev/null 2>&1; then
+    python -c "import os.path, sys; print(os.path.relpath(sys.argv[2], sys.argv[1]).replace('\\\\', '/'))" "$from_dir" "$to_target"
+  elif command -v realpath >/dev/null 2>&1; then
+    realpath --relative-to="$from_dir" "$to_target" 2>/dev/null || echo "$to_target"
+  else
+    echo "$to_target"
+  fi
 }
 
 if [[ "$IN_PLACE" == true ]]; then
@@ -223,6 +237,23 @@ else
 fi
 
 echo "[worktrees] Created: $WT_TARGET (branch $BRANCH_NAME)" >&2
+
+# --- normalize worktree pointers to portable relative paths ---
+if [[ -f "$WT_TARGET/.git" ]]; then
+  WT_ADMIN_DIR=$(sed -n 's/^gitdir: *//p' "$WT_TARGET/.git" | tr -d '\r')
+  if [[ -n "$WT_ADMIN_DIR" && -d "$WT_ADMIN_DIR" ]]; then
+    REL_TO_ADMIN=$(make_relative_path "$WT_TARGET" "$WT_ADMIN_DIR")
+    if [[ -n "$REL_TO_ADMIN" && "$REL_TO_ADMIN" != "$WT_ADMIN_DIR" ]]; then
+      echo "gitdir: $REL_TO_ADMIN" > "$WT_TARGET/.git"
+    fi
+    if [[ -f "$WT_ADMIN_DIR/gitdir" ]]; then
+      REL_TO_WT_GIT=$(make_relative_path "$WT_ADMIN_DIR" "$WT_TARGET/.git")
+      if [[ -n "$REL_TO_WT_GIT" && "$REL_TO_WT_GIT" != "$WT_TARGET/.git" ]]; then
+        echo "$REL_TO_WT_GIT" > "$WT_ADMIN_DIR/gitdir"
+      fi
+    fi
+  fi
+fi
 
 # --- output ---
 if $JSON_MODE; then
