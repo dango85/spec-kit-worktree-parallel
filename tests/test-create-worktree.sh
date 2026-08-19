@@ -220,6 +220,70 @@ output=$(bash "$CREATE_SCRIPT" --json --dry-run --repo-root "$TEMP_DIR" feature/
 assert_contains "slashes replaced" 'feature-user-auth' "$output"
 cleanup; trap - EXIT
 
+# Test 13: WSL Windows-launch converts /mnt/c/... to C:/... in JSON
+echo "[13] WSL Windows-launch converts /mnt/c/... to C:/... in JSON"
+output=$(SPECIFY_FORCE_WSL=1 SPECIFY_FORCE_WSL_WIN_LAUNCH=1 bash "$CREATE_SCRIPT" --json --dry-run --repo-root /mnt/c/Users/test/myrepo 005-wsl-win)
+assert_contains "path converted to C:/" '"path":"C:/Users/test/myrepo/.worktrees/005-wsl-win"' "$output"
+
+# Test 14: WSL Windows-launch converts /mnt/c/... in Key-Value output
+echo "[14] WSL Windows-launch converts /mnt/c/... in Key-Value output"
+output=$(SPECIFY_FORCE_WSL=1 SPECIFY_FORCE_WSL_WIN_LAUNCH=1 bash "$CREATE_SCRIPT" --dry-run --repo-root /mnt/c/Users/test/myrepo 005-wsl-win)
+assert_contains "PATH converted to C:/" 'PATH=C:/Users/test/myrepo/.worktrees/005-wsl-win' "$output"
+
+# Test 15: WSL Windows-launch leaves Linux rootfs (/home) untouched
+echo "[15] WSL Windows-launch leaves Linux rootfs (/home) untouched"
+output=$(SPECIFY_FORCE_WSL=1 SPECIFY_FORCE_WSL_WIN_LAUNCH=1 bash "$CREATE_SCRIPT" --json --dry-run --repo-root /home/ben/myrepo 005-linux-wt)
+assert_contains "Linux path unchanged" '"path":"/home/ben/myrepo/.worktrees/005-linux-wt"' "$output"
+
+# Test 16: Interactive WSL (not Windows-launched) leaves /mnt/c/... untouched
+echo "[16] Interactive WSL leaves /mnt/c/... untouched"
+output=$(SPECIFY_FORCE_WSL=1 SPECIFY_FORCE_WSL_WIN_LAUNCH=0 bash "$CREATE_SCRIPT" --json --dry-run --repo-root /mnt/c/Users/test/myrepo 005-interactive)
+assert_contains "WSL path unchanged" '"path":"/mnt/c/Users/test/myrepo/.worktrees/005-interactive"' "$output"
+
+# Test 17: WSL Windows-launch converts sibling layout path to C:/...
+echo "[17] WSL Windows-launch converts sibling layout path to C:/..."
+output=$(SPECIFY_FORCE_WSL=1 SPECIFY_FORCE_WSL_WIN_LAUNCH=1 bash "$CREATE_SCRIPT" --json --dry-run --layout sibling --repo-root /mnt/c/Users/test/myrepo 005-sibling-win)
+assert_contains "sibling path converted to C:/" '"path":"C:/Users/test/myrepo--005-sibling-win"' "$output"
+
+# Test 18: WSL Windows-launch real nested worktree creation fixes git pointers
+echo "[18] WSL Windows-launch real nested worktree creation fixes git pointers"
+TEMP_DIR=$(setup_temp_repo)
+trap cleanup EXIT
+output=$(SPECIFY_FORCE_WSL=1 SPECIFY_FORCE_WSL_WIN_LAUNCH=1 bash "$CREATE_SCRIPT" --json --repo-root "$TEMP_DIR" 005-ptr-test 2>/dev/null)
+assert_contains "nested worktree created" '"worktree":true' "$output"
+assert_contains "layout is nested" '"layout":"nested"' "$output"
+wt_path="$TEMP_DIR/.worktrees/005-ptr-test"
+TOTAL=$((TOTAL + 1))
+if [[ -d "$wt_path" ]]; then
+  PASS=$((PASS + 1))
+  echo "  PASS: nested worktree created"
+else
+  FAIL=$((FAIL + 1))
+  echo "  FAIL: nested worktree not created"
+fi
+git -C "$TEMP_DIR" worktree remove "$wt_path" 2>/dev/null || true
+cleanup; trap - EXIT
+
+# Test 19: WSL Windows-launch real sibling worktree creation fixes git pointers
+echo "[19] WSL Windows-launch real sibling worktree creation fixes git pointers"
+TEMP_DIR=$(setup_temp_repo)
+trap cleanup EXIT
+output=$(SPECIFY_FORCE_WSL=1 SPECIFY_FORCE_WSL_WIN_LAUNCH=1 bash "$CREATE_SCRIPT" --json --layout sibling --repo-root "$TEMP_DIR" 005-sibling-real 2>/dev/null)
+assert_contains "sibling worktree created" '"worktree":true' "$output"
+assert_contains "layout is sibling" '"layout":"sibling"' "$output"
+base=$(basename "$TEMP_DIR")
+sibling_path="$(dirname "$TEMP_DIR")/${base}--005-sibling-real"
+TOTAL=$((TOTAL + 1))
+if [[ -d "$sibling_path" ]]; then
+  PASS=$((PASS + 1))
+  echo "  PASS: sibling worktree directory exists"
+else
+  FAIL=$((FAIL + 1))
+  echo "  FAIL: sibling worktree directory not found at $sibling_path"
+fi
+git -C "$TEMP_DIR" worktree remove "$sibling_path" 2>/dev/null || true
+cleanup; trap - EXIT
+
 # --- summary ---
 echo ""
 echo "=== Results: $PASS/$TOTAL passed, $FAIL failed ==="
@@ -227,3 +291,5 @@ echo "=== Results: $PASS/$TOTAL passed, $FAIL failed ==="
 if [[ "$FAIL" -gt 0 ]]; then
   exit 1
 fi
+
+
