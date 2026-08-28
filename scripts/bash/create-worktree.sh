@@ -74,11 +74,122 @@ if [[ -z "$BRANCH_NAME" ]]; then
   exit 1
 fi
 
+## --- WSL & Windows launch detection ---
+is_wsl() {
+  if [[ -n "${SPECIFY_FORCE_WSL:-}" ]]; then
+    [[ "$SPECIFY_FORCE_WSL" == "1" || "$SPECIFY_FORCE_WSL" == "true" ]] && return 0 || return 1
+  fi
+  if [[ -n "${WSL_DISTRO_NAME:-}" ]] || [[ -f /proc/sys/fs/binfmt_misc/WSLInterop ]] || grep -qi microsoft /proc/version 2>/dev/null; then
+    return 0
+  fi
+  return 1
+}
+
+is_wsl_win_launch() {
+  if [[ -n "${SPECIFY_FORCE_WSL_WIN_LAUNCH:-}" ]]; then
+    [[ "$SPECIFY_FORCE_WSL_WIN_LAUNCH" == "1" || "$SPECIFY_FORCE_WSL_WIN_LAUNCH" == "true" ]] && return 0 || return 1
+  fi
+  if ! is_wsl; then
+    return 1
+  fi
+
+  # Non-interactive execution in WSL (e.g. spawned by Windows tool runner / Antigravity / IDE)
+  if [[ ! -t 0 ]] || [[ ! -t 1 ]]; then
+    return 0
+  fi
+
+  # If parent process is WSL relay or init bridge (direct invocation via wsl.exe or bash.exe)
+  if [[ -r /proc/$PPID/comm ]]; then
+    local pcomm
+    pcomm=$(cat /proc/$PPID/comm 2>/dev/null || true)
+    if [[ "$pcomm" =~ ^(Relay|init|wslhost|wsl|bash\.exe|wsl\.exe) ]]; then
+      return 0
+    fi
+  fi
+  if [[ -r /proc/$PPID/cmdline ]]; then
+    local pcmd
+    pcmd=$(tr '\0' ' ' < /proc/$PPID/cmdline 2>/dev/null || true)
+    if [[ "$pcmd" =~ ^/init[[:space:]]*$ || "$pcmd" =~ wsl\.exe || "$pcmd" =~ bash\.exe ]]; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+to_windows_path() {
+  local p="$1"
+  if [[ "$p" =~ ^/mnt/([a-zA-Z])/(.*) ]]; then
+    local drive="${BASH_REMATCH[1]}"
+    local rest="${BASH_REMATCH[2]}"
+    local drive_upper
+    drive_upper=$(echo "$drive" | tr '[:lower:]' '[:upper:]')
+    echo "${drive_upper}:/${rest}"
+  elif [[ "$p" =~ ^/mnt/([a-zA-Z])$ ]]; then
+    local drive="${BASH_REMATCH[1]}"
+    local drive_upper
+    drive_upper=$(echo "$drive" | tr '[:lower:]' '[:upper:]')
+    echo "${drive_upper}:/"
+  else
+    echo "$p"
+  fi
+}
+
+to_wsl_path() {
+  local p="$1"
+  if [[ "$p" =~ ^([a-zA-Z]):[/\\](.*) ]]; then
+    local drive="${BASH_REMATCH[1]}"
+    local rest="${BASH_REMATCH[2]}"
+    local drive_lower
+    drive_lower=$(echo "$drive" | tr '[:upper:]' '[:lower:]')
+    rest=$(echo "$rest" | tr '\\' '/')
+    echo "/mnt/${drive_lower}/${rest}"
+  elif [[ "$p" =~ ^([a-zA-Z]):$ ]]; then
+    local drive="${BASH_REMATCH[1]}"
+    local drive_lower
+    drive_lower=$(echo "$drive" | tr '[:upper:]' '[:lower:]')
+    echo "/mnt/${drive_lower}"
+  else
+    echo "$p"
+  fi
+}
+
 # --- resolve repo root ---
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
-    echo "Error: not inside a git repository" >&2; exit 1
-  }
+if [[ -n "$REPO_ROOT" ]]; then
+  if is_wsl; then
+    REPO_ROOT="$(to_wsl_path "$REPO_ROOT")"
+  fi
+else
+  # If running in WSL from inside a worktree that contains a Windows gitdir pointer
+  # (e.g. created by/for Windows IDE), bridge the pointer to resolve the common root.
+  if is_wsl && [[ -f .git ]]; then
+    raw_gitdir=$(grep '^gitdir:' .git 2>/dev/null | sed 's/^gitdir: *//; s/[[:space:]]*$//' || true)
+    if [[ "$raw_gitdir" =~ ^[a-zA-Z]:[/\\] ]]; then
+      wsl_gitdir="$(to_wsl_path "$raw_gitdir")"
+      if [[ -d "$wsl_gitdir" ]]; then
+        common_dir=$(GIT_DIR="$wsl_gitdir" git rev-parse --git-common-dir 2>/dev/null || true)
+        if [[ -n "$common_dir" && -d "$common_dir" ]]; then
+          REPO_ROOT="$(cd "$common_dir/.." 2>/dev/null && pwd)"
+        elif [[ -f "$wsl_gitdir/commondir" ]]; then
+          cd_rel=$(cat "$wsl_gitdir/commondir" 2>/dev/null || true)
+          REPO_ROOT="$(cd "$wsl_gitdir/$cd_rel/.." 2>/dev/null && pwd)"
+        fi
+      fi
+    fi
+  fi
+
+  if [[ -z "$REPO_ROOT" ]]; then
+    if common_dir="$(git rev-parse --git-common-dir 2>/dev/null)"; then
+      if [[ "$common_dir" != /* ]]; then
+        common_dir="$(cd "$common_dir" 2>/dev/null && pwd)"
+      fi
+      REPO_ROOT="$(cd "$common_dir/.." 2>/dev/null && pwd)"
+    elif top_level="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+      REPO_ROOT="$top_level"
+    else
+      echo "Error: not inside a git repository" >&2; exit 1
+    fi
+  fi
 fi
 
 # --- load config ---
@@ -163,6 +274,11 @@ resolve_worktree_path() {
 
 WT_TARGET=$(resolve_worktree_path)
 
+REPORT_TARGET="$WT_TARGET"
+if is_wsl_win_launch; then
+  REPORT_TARGET=$(to_windows_path "$WT_TARGET")
+fi
+
 # --- resolve base ref ---
 resolve_base_ref() {
   if [[ -n "$BASE_REF" ]]; then echo "$BASE_REF"; return; fi
@@ -178,11 +294,11 @@ resolve_base_ref() {
 if [[ "$DRY_RUN" == true ]]; then
   if $JSON_MODE; then
     printf '{"branch":"%s","worktree":true,"path":"%s","layout":"%s","dry_run":true}\n' \
-      "$BRANCH_NAME" "$WT_TARGET" "$LAYOUT"
+      "$BRANCH_NAME" "$REPORT_TARGET" "$LAYOUT"
   else
     echo "WORKTREE=true"
     echo "BRANCH=$BRANCH_NAME"
-    echo "PATH=$WT_TARGET"
+    echo "PATH=$REPORT_TARGET"
     echo "LAYOUT=$LAYOUT"
     echo "DRY_RUN=true"
   fi
@@ -222,15 +338,50 @@ else
   fi
 fi
 
-echo "[worktrees] Created: $WT_TARGET (branch $BRANCH_NAME)" >&2
+# --- post-creation pointer fixes for WSL Windows launches ---
+if is_wsl_win_launch; then
+  if [[ "$WT_TARGET" =~ ^/mnt/[a-zA-Z]/ ]]; then
+    # 1. Fix .git file in worktree directory
+    wt_git_file="$WT_TARGET/.git"
+    if [[ -f "$wt_git_file" ]]; then
+      current_gitdir=$(grep '^gitdir:' "$wt_git_file" 2>/dev/null | sed 's/^gitdir: *//' || true)
+      if [[ -n "$current_gitdir" && "$current_gitdir" =~ ^/mnt/[a-zA-Z]/ ]]; then
+        win_gitdir=$(to_windows_path "$current_gitdir")
+        echo "gitdir: $win_gitdir" > "$wt_git_file"
+      fi
+    fi
+
+    # 2. Fix gitdir in main repository metadata (.git/worktrees/<name>/gitdir)
+    main_git_dir="$(git -C "$REPO_ROOT" rev-parse --git-common-dir 2>/dev/null || echo "$REPO_ROOT/.git")"
+    if [[ ! -d "$main_git_dir" && -d "$REPO_ROOT/.git" ]]; then
+      main_git_dir="$REPO_ROOT/.git"
+    fi
+    if [[ "$main_git_dir" != /* ]]; then
+      main_git_dir="$REPO_ROOT/$main_git_dir"
+    fi
+
+    if [[ -d "$main_git_dir/worktrees" ]]; then
+      for wt_meta in "$main_git_dir/worktrees"/*; do
+        if [[ -d "$wt_meta" && -f "$wt_meta/gitdir" ]]; then
+          meta_target=$(cat "$wt_meta/gitdir" 2>/dev/null || true)
+          if [[ "$meta_target" == "$WT_TARGET/.git" || "$meta_target" == "$WT_TARGET" ]]; then
+            echo "$(to_windows_path "$meta_target")" > "$wt_meta/gitdir"
+          fi
+        fi
+      done
+    fi
+  fi
+fi
+
+echo "[worktrees] Created: $REPORT_TARGET (branch $BRANCH_NAME)" >&2
 
 # --- output ---
 if $JSON_MODE; then
   printf '{"branch":"%s","worktree":true,"path":"%s","layout":"%s"}\n' \
-    "$BRANCH_NAME" "$WT_TARGET" "$LAYOUT"
+    "$BRANCH_NAME" "$REPORT_TARGET" "$LAYOUT"
 else
   echo "WORKTREE=true"
   echo "BRANCH=$BRANCH_NAME"
-  echo "PATH=$WT_TARGET"
+  echo "PATH=$REPORT_TARGET"
   echo "LAYOUT=$LAYOUT"
 fi
