@@ -284,6 +284,42 @@ fi
 git -C "$TEMP_DIR" worktree remove "$sibling_path" 2>/dev/null || true
 cleanup; trap - EXIT
 
+# Test 20: WSL Windows-launch creation while cwd is inside existing worktree with Windows gitdir pointer
+echo "[20] WSL creation from inside existing worktree with Windows gitdir"
+TEMP_DIR=$(setup_temp_repo)
+trap cleanup EXIT
+# 1. Create first worktree with Windows pointer
+SPECIFY_FORCE_WSL=1 SPECIFY_FORCE_WSL_WIN_LAUNCH=1 bash "$CREATE_SCRIPT" --json --repo-root "$TEMP_DIR" 005-first-wt >/dev/null 2>&1
+wt1_path="$TEMP_DIR/.worktrees/005-first-wt"
+# 2. cd into the first worktree and run create-worktree for a second branch
+output=$(cd "$wt1_path" && SPECIFY_FORCE_WSL=1 SPECIFY_FORCE_WSL_WIN_LAUNCH=1 bash "$CREATE_SCRIPT" --json 005-second-wt 2>/dev/null)
+assert_contains "second worktree created from inside first" '"worktree":true' "$output"
+assert_contains "second branch name correct" '"branch":"005-second-wt"' "$output"
+wt2_path="$TEMP_DIR/.worktrees/005-second-wt"
+TOTAL=$((TOTAL + 1))
+if [[ -d "$wt2_path" ]]; then
+  PASS=$((PASS + 1))
+  echo "  PASS: second worktree created at repo root level, not nested in first"
+else
+  FAIL=$((FAIL + 1))
+  echo "  FAIL: second worktree not found at $wt2_path"
+fi
+git -C "$TEMP_DIR" worktree remove "$wt1_path" 2>/dev/null || true
+git -C "$TEMP_DIR" worktree remove "$wt2_path" 2>/dev/null || true
+cleanup; trap - EXIT
+
+# Test 21: WSL Windows-launch with forward-slash Windows drive letter --repo-root
+echo "[21] WSL Windows-launch with forward-slash Windows drive letter --repo-root"
+output=$(SPECIFY_FORCE_WSL=1 SPECIFY_FORCE_WSL_WIN_LAUNCH=1 bash "$CREATE_SCRIPT" --json --dry-run --repo-root "C:/Users/test/myrepo" 005-win-arg)
+assert_contains "worktree dry-run accepts Windows --repo-root" '"branch":"005-win-arg"' "$output"
+assert_contains "worktree dry-run normalizes Windows --repo-root" '"path":"C:/Users/test/myrepo/.worktrees/005-win-arg"' "$output"
+
+# Test 22: WSL Windows-launch with backslash Windows drive letter --repo-root
+echo "[22] WSL Windows-launch with backslash Windows drive letter --repo-root"
+output=$(SPECIFY_FORCE_WSL=1 SPECIFY_FORCE_WSL_WIN_LAUNCH=1 bash "$CREATE_SCRIPT" --json --dry-run --repo-root 'C:\Users\test\myrepo' 005-win-bs)
+assert_contains "worktree dry-run accepts backslash Windows --repo-root" '"branch":"005-win-bs"' "$output"
+assert_contains "worktree dry-run normalizes backslash Windows --repo-root" '"path":"C:/Users/test/myrepo/.worktrees/005-win-bs"' "$output"
+
 # --- summary ---
 echo ""
 echo "=== Results: $PASS/$TOTAL passed, $FAIL failed ==="

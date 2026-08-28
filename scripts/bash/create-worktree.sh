@@ -135,11 +135,61 @@ to_windows_path() {
   fi
 }
 
+to_wsl_path() {
+  local p="$1"
+  if [[ "$p" =~ ^([a-zA-Z]):[/\\](.*) ]]; then
+    local drive="${BASH_REMATCH[1]}"
+    local rest="${BASH_REMATCH[2]}"
+    local drive_lower
+    drive_lower=$(echo "$drive" | tr '[:upper:]' '[:lower:]')
+    rest=$(echo "$rest" | tr '\\' '/')
+    echo "/mnt/${drive_lower}/${rest}"
+  elif [[ "$p" =~ ^([a-zA-Z]):$ ]]; then
+    local drive="${BASH_REMATCH[1]}"
+    local drive_lower
+    drive_lower=$(echo "$drive" | tr '[:upper:]' '[:lower:]')
+    echo "/mnt/${drive_lower}"
+  else
+    echo "$p"
+  fi
+}
+
 # --- resolve repo root ---
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
-    echo "Error: not inside a git repository" >&2; exit 1
-  }
+if [[ -n "$REPO_ROOT" ]]; then
+  if is_wsl; then
+    REPO_ROOT="$(to_wsl_path "$REPO_ROOT")"
+  fi
+else
+  # If running in WSL from inside a worktree that contains a Windows gitdir pointer
+  # (e.g. created by/for Windows IDE), bridge the pointer to resolve the common root.
+  if is_wsl && [[ -f .git ]]; then
+    raw_gitdir=$(grep '^gitdir:' .git 2>/dev/null | sed 's/^gitdir: *//; s/[[:space:]]*$//' || true)
+    if [[ "$raw_gitdir" =~ ^[a-zA-Z]:[/\\] ]]; then
+      wsl_gitdir="$(to_wsl_path "$raw_gitdir")"
+      if [[ -d "$wsl_gitdir" ]]; then
+        common_dir=$(GIT_DIR="$wsl_gitdir" git rev-parse --git-common-dir 2>/dev/null || true)
+        if [[ -n "$common_dir" && -d "$common_dir" ]]; then
+          REPO_ROOT="$(cd "$common_dir/.." 2>/dev/null && pwd)"
+        elif [[ -f "$wsl_gitdir/commondir" ]]; then
+          cd_rel=$(cat "$wsl_gitdir/commondir" 2>/dev/null || true)
+          REPO_ROOT="$(cd "$wsl_gitdir/$cd_rel/.." 2>/dev/null && pwd)"
+        fi
+      fi
+    fi
+  fi
+
+  if [[ -z "$REPO_ROOT" ]]; then
+    if common_dir="$(git rev-parse --git-common-dir 2>/dev/null)"; then
+      if [[ "$common_dir" != /* ]]; then
+        common_dir="$(cd "$common_dir" 2>/dev/null && pwd)"
+      fi
+      REPO_ROOT="$(cd "$common_dir/.." 2>/dev/null && pwd)"
+    elif top_level="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+      REPO_ROOT="$top_level"
+    else
+      echo "Error: not inside a git repository" >&2; exit 1
+    fi
+  fi
 fi
 
 # --- load config ---

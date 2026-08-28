@@ -19,7 +19,7 @@ This extension **does not** change another extension’s configuration on instal
 ## Installation
 
 ```bash
-specify extension add worktrees --from https://github.com/dango85/spec-kit-worktree-parallel/archive/refs/tags/v1.3.2.zip
+specify extension add worktrees --from https://github.com/snowman386/spec-kit-worktree-parallel/archive/refs/tags/v1.4.3.zip
 ```
 
 ## Cursor IDE: best results with Spec Kit
